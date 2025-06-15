@@ -18,6 +18,7 @@ public class GpsManager : MonoBehaviour
 
     public int RefreshCount { get; private set; }
 
+
     private void Awake()
     {
         Init();
