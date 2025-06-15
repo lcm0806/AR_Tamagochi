@@ -8,6 +8,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/PermissionScene.unity
     guid: c5b6853c4649f6540817679a8b3671a5
+  - enabled: 1
+    path: Assets/Scenes/GPSScene.unity
+    guid: 31220f1c8f4ed7f4abb94c6934c511b3
   - enabled: 0
     path: Assets/Scenes/SampleScene.unity
     guid: 4755b35b590504809a7525fd2109c2e2

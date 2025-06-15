@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 
 public class PermissionManager : MonoBehaviour
 {
-    private string targetPermission = Permission.FineLocation;
+    //private string targetPermission = Permission.FineLocation;
 
 
     private void Start()
@@ -25,22 +25,6 @@ public class PermissionManager : MonoBehaviour
 
         PermissionCallbacks callbacks = new();
         Permission.RequestUserPermissions(permissions, callbacks);
-
-        callbacks.PermissionGranted += t =>
-        {
-            SceneManager.LoadScene(1);
-        };
-        callbacks.PermissionDenied += t =>
-        {
-            Application.Quit();
-        };
-
-    }
-
-    public void RequestWithCallbacks()
-    {
-        PermissionCallbacks callbacks = new();
-        Permission.RequestUserPermission(targetPermission, callbacks);
 
         callbacks.PermissionGranted += t =>
         {
