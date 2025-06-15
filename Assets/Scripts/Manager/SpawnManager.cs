@@ -95,7 +95,19 @@ public class SpawnManager : MonoBehaviour
             GameObject selectedPrefab = prefabsToSpawn[randomIndex];
 
             // 프리팹을 유효한 위치와 회전으로 소환
-            Instantiate(selectedPrefab, potentialSpawnPosition, rotationToApply);
+            GameObject spawnedInstance = Instantiate(selectedPrefab, potentialSpawnPosition, rotationToApply);
+            // --- 여기가 핵심! ---
+            // 소환된 인스턴스의 ClickableObject 컴포넌트를 찾아서 원본 프리팹을 설정
+            ClickableObject clickObjectScript = spawnedInstance.GetComponent<ClickableObject>();
+            if (clickObjectScript != null)
+            {
+                clickObjectScript.SetOriginalPrefab(selectedPrefab); // <--- 'selectedPrefab' (원본)을 전달!
+            }
+            else
+            {
+                Debug.LogWarning($"소환된 오브젝트 '{spawnedInstance.name}'에 ClickableObject 스크립트가 없습니다.");
+            }
+            // ---------------------
             currentSpawnCount++;
             Debug.Log("Gameobject 소환됨. 현재 소환 개수: " + currentSpawnCount);
             return true; // 소환 성공
