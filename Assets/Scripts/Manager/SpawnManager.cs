@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class SpawnManager : MonoBehaviour
 {
@@ -23,6 +24,12 @@ public class SpawnManager : MonoBehaviour
     public float overlapCheckRadius = 5f; // 겹침 검사 반경 (소환할 오브젝트 크기에 따라 조절)
     public int maxSpawnAttempts = 10; // 유효한 위치를 찾기 위한 최대 시도 횟수
 
+    // --- 동적 스폰 로직 설정 ---
+    [Header("Spawn Dynamic Logic")]
+    public int initialRangeEndIndex = 2; // Cat, Dog, Dove의 마지막 인덱스 (포함)
+    private int _currentExpansionLevel = 0; // 현재 확장 레벨 (잡힌 마리 수에 따라 결정)
+    // ----------------------------
+
     void Start()
     {
         if (prefabsToSpawn == null || prefabsToSpawn.Count == 0)
@@ -32,6 +39,7 @@ public class SpawnManager : MonoBehaviour
             return;
         }
 
+        _currentExpansionLevel = 0; // 확장 레벨 초기화
         // spawnableLayer가 설정되지 않았다면 경고 메시지 출력
         if (spawnableLayer == 0) // LayerMask의 기본값은 0 (Nothing)
         {
@@ -63,60 +71,125 @@ public class SpawnManager : MonoBehaviour
 
     bool TrySpawnRandomPrefab()
     {
+        if (GameManager.Instance == null)
+        {
+            Debug.LogError("GameManager 인스턴스를 찾을 수 없습니다. SpawnManager가 작동할 수 없습니다.");
+            return false;
+        }
+
+        // --- 현재 활성 범위 내에서 포획된 프리팹 수 계산 및 확장 레벨 업데이트 ---
+        int capturedCountInInitialRange = 0;
+        for (int i = 0; i <= initialRangeEndIndex && i < prefabsToSpawn.Count; i++)
+        {
+            GameObject currentPrefab = prefabsToSpawn[i];
+            if (currentPrefab != null && GameManager.Instance.IsTamagotchiCaptured(currentPrefab))
+            {
+                capturedCountInInitialRange++;
+            }
+        }
+
+        _currentExpansionLevel = capturedCountInInitialRange; // 잡힌 마리수 만큼 확장 레벨 증가
+
+        // --- 스폰 후보 리스트 생성 ---
+        List<GameObject> currentSpawnCandidates = new List<GameObject>();
+
+        // 스폰 대상의 실제 끝 인덱스 계산 (초기 범위 + 확장 레벨)
+        int effectiveEndIndex = initialRangeEndIndex + _currentExpansionLevel;
+        // prefabsToSpawn 리스트의 실제 크기를 넘지 않도록 조정
+        effectiveEndIndex = Mathf.Min(effectiveEndIndex, prefabsToSpawn.Count - 1);
+
+
+        Debug.Log($"--- 스폰 가능한 프리팹 후보 검사 시작 (인덱스 0 ~ {effectiveEndIndex}) ---"); // 시작은 항상 0
+        for (int i = 0; i <= effectiveEndIndex && i < prefabsToSpawn.Count; i++)
+        {
+            GameObject currentPrefab = prefabsToSpawn[i];
+            if (currentPrefab != null)
+            {
+                bool isCaptured = GameManager.Instance.IsTamagotchiCaptured(currentPrefab);
+                Debug.Log($"인덱스 {i}: 프리팹 '{currentPrefab.name}', 포획 상태: {isCaptured}");
+
+                if (!isCaptured) // 포획되지 않은 프리팹만 후보에 추가
+                {
+                    currentSpawnCandidates.Add(currentPrefab);
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"인덱스 {i}: Prefab이 null입니다.");
+            }
+        }
+        Debug.Log($"--- 스폰 가능한 프리팹 후보 검사 종료. 현재 스폰 후보 수: {currentSpawnCandidates.Count} ---");
+
+        // --- 디버그 로그 활성화 및 개선 ---
+        if (currentSpawnCandidates.Count > 0)
+        {
+            string logMessage = "현재 최종 스폰 가능한 다마고치 프리팹: ";
+            foreach (GameObject prefab in currentSpawnCandidates)
+            {
+                logMessage += prefab.name + ", ";
+            }
+            Debug.Log(logMessage.TrimEnd(',', ' '));
+        }
+        else
+        {
+            Debug.Log("현재 스폰 가능한 다마고치 프리팹이 없습니다.");
+        }
+        // ----------------------------------
+
+        // 소환 가능한 프리팹이 하나도 없다면 소환 중단
+        if (currentSpawnCandidates.Count == 0)
+        {
+            Debug.Log("모든 유효한 다마고치가 포획되었거나 소환할 수 없습니다. 더 이상 소환하지 않습니다.");
+            StopCoroutine(SpawnCoroutine());
+            return false;
+        }
+
         int attempts = 0;
         Vector3 potentialSpawnPosition = Vector3.zero;
         bool positionFound = false;
 
-        // maxSpawnAttempts 횟수만큼 반복하며 겹치지 않는 위치를 찾습니다.
         while (attempts < maxSpawnAttempts && !positionFound)
         {
             potentialSpawnPosition = new Vector3(
                 Random.Range(-spawnRangeX / 2, spawnRangeX / 2),
-                0.5f, // Plain 위에 살짝 띄워서 소환 (Plain의 Y 위치에 따라 조절)
+                0.5f,
                 Random.Range(-spawnRangeZ / 2, spawnRangeZ / 2)
             );
 
-            // 해당 위치에 이미 다른 오브젝트가 있는지 확인 (겹침 검사)
-            // Physics.CheckSphere는 주어진 위치에 특정 반경의 구를 그려 충돌하는 콜라이더가 있는지 확인합니다.
-            // spawnableLayer에 설정된 레이어에 있는 오브젝트만 검사합니다.
             if (!Physics.CheckSphere(potentialSpawnPosition, overlapCheckRadius, spawnableLayer))
             {
-                positionFound = true; // 겹치지 않는 유효한 위치를 찾음
+                positionFound = true;
             }
             attempts++;
         }
 
         if (positionFound)
         {
-            // 회전 값은 Y축 145도로 고정
             Quaternion rotationToApply = Quaternion.Euler(0, 145, 0);
 
-            int randomIndex = Random.Range(0, prefabsToSpawn.Count);
-            GameObject selectedPrefab = prefabsToSpawn[randomIndex];
+            int randomIndex = Random.Range(0, currentSpawnCandidates.Count);
+            GameObject selectedPrefab = currentSpawnCandidates[randomIndex];
 
-            // 프리팹을 유효한 위치와 회전으로 소환
             GameObject spawnedInstance = Instantiate(selectedPrefab, potentialSpawnPosition, rotationToApply);
-            // --- 여기가 핵심! ---
-            // 소환된 인스턴스의 ClickableObject 컴포넌트를 찾아서 원본 프리팹을 설정
+
             ClickableObject clickObjectScript = spawnedInstance.GetComponent<ClickableObject>();
             if (clickObjectScript != null)
             {
-                clickObjectScript.SetOriginalPrefab(selectedPrefab); // <--- 'selectedPrefab' (원본)을 전달!
+                clickObjectScript.SetOriginalPrefab(selectedPrefab);
             }
             else
             {
                 Debug.LogWarning($"소환된 오브젝트 '{spawnedInstance.name}'에 ClickableObject 스크립트가 없습니다.");
             }
-            // ---------------------
+
             currentSpawnCount++;
-            Debug.Log("Gameobject 소환됨. 현재 소환 개수: " + currentSpawnCount);
-            return true; // 소환 성공
+            Debug.Log($"Gameobject 소환됨: {selectedPrefab.name}. 현재 소환 개수: {currentSpawnCount}");
+            return true;
         }
         else
         {
-            // 유효한 위치를 찾지 못함
             Debug.LogWarning($"최대 시도 횟수({maxSpawnAttempts}) 내에 유효한 소환 위치를 찾지 못했습니다. 주변에 공간이 부족할 수 있습니다.");
-            return false; // 소환 실패
+            return false;
         }
     }
 

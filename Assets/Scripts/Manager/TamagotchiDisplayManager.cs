@@ -1,5 +1,6 @@
 using UnityEngine;
-using TMPro; // UI Text (Text Mesh Pro)를 사용할 경우
+using TMPro;
+using UnityEngine.SceneManagement; // UI Text (Text Mesh Pro)를 사용할 경우
 
 public class TamagotchiDisplayManager : MonoBehaviour
 {
@@ -10,9 +11,12 @@ public class TamagotchiDisplayManager : MonoBehaviour
 
     private IDamagotchi currentTamagotchiData; // 데이터만 저장
     private GameObject currentTamagotchiModel; // 실제 생성된 모델 인스턴스
+    private GameObject originalPrefabReference;
 
     private float statusUpdateTimer = 0f;
     public float statusUpdateInterval = 1f;
+
+    private bool isCaptured = false; //포획상태 추적 변수 추가
 
     void Start()
     {
@@ -21,6 +25,7 @@ public class TamagotchiDisplayManager : MonoBehaviour
         {
             currentTamagotchiData = GameManager.Instance.SelectedTamagotchiInstance;
             GameObject selectedPrefab = GameManager.Instance.SelectedTamagotchiPrefab;
+            originalPrefabReference = GameManager.Instance.SelectedTamagotchiPrefab;
 
             Debug.Log($"다음 씬에서 받아온 다마고치: {currentTamagotchiData.Name} (프리팹: {selectedPrefab.name})");
 
@@ -64,7 +69,7 @@ public class TamagotchiDisplayManager : MonoBehaviour
 
     void Update()
     {
-        if (currentTamagotchiData == null) return;
+        if (currentTamagotchiData == null || isCaptured) return;
 
         statusUpdateTimer += Time.deltaTime;
         if (statusUpdateTimer >= statusUpdateInterval)
@@ -73,10 +78,38 @@ public class TamagotchiDisplayManager : MonoBehaviour
             UpdateUI();
             statusUpdateTimer = 0f;
 
-            if (currentTamagotchiData.IsDead())
+            // --- 포획 조건 확인 ---
+            if (currentTamagotchiData.IsHappyMaxed) // <--- 행복도 100%를 감지
+            {
+                Debug.Log($"{currentTamagotchiData.Name}의 행복도가 100%가 되었습니다! 포획 성공!");
+                isCaptured = true; // 포획 상태로 변경
+
+                // 2. 행복도 Max 여부를 확인합니다.
+                if (currentTamagotchiData.IsHappyMaxed) // <-- 여기서 IsHappyMaxed를 호출합니다.
+                {
+                    Debug.Log($"{currentTamagotchiData.Name}의 행복도가 100%가 되었습니다! 포획 성공!");
+                    isCaptured = true; // 포획 상태로 전환하여 더 이상 업데이트되지 않도록 합니다.
+
+                    // GameManager에 포획된 다마고치 프리팹을 추가합니다.
+                    if (GameManager.Instance != null && originalPrefabReference != null)
+                    {
+                        GameManager.Instance.AddCapturedTamagotchi(originalPrefabReference);
+                    }
+                    else
+                    {
+                        Debug.LogError("GameManager 인스턴스 또는 원본 프리팹 참조가 null이어서 포획 정보를 추가할 수 없습니다.");
+                    }
+
+                    // 3. GpsScene으로 이동합니다.
+                    SceneManager.LoadScene("GpsScene"); // <-- 이 줄이 실행되는지 확인!
+                }
+            }
+            else if (currentTamagotchiData.IsDead()) // 사망 조건 확인 (포획보다 우선 순위 낮음)
             {
                 Debug.Log($"{currentTamagotchiData.Name}이(가) 죽었습니다.");
-                // 게임 오버 처리
+                isCaptured = false; // 죽으면 더 이상 업데이트 안함
+                SceneManager.LoadScene("GPSScene");
+                // 게임 오버 처리 (예: SceneManager.LoadScene("GameOverScene");)
             }
         }
     }

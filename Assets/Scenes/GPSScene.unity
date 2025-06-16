@@ -783,6 +783,12 @@ MonoBehaviour:
   - {fileID: 5484727557557623914, guid: eb94baab425cff043832418d356babac, type: 3}
   - {fileID: 6331828391449226866, guid: 65b4340757e99494fad34c4797b2dbc4, type: 3}
   - {fileID: 8760144134481015669, guid: 66c3b8eb73c7c354e8da080785fc590f, type: 3}
+  - {fileID: 4985043737638071878, guid: 494f411ef52c9c54d8c9dd73d9d14104, type: 3}
+  - {fileID: 8808988972717473586, guid: 3b0461701486f7545909ae9f2b0a7090, type: 3}
+  - {fileID: 7699798878602838583, guid: 98efb709d38270043bbfa07e6f623b80, type: 3}
+  - {fileID: 3825276727120075587, guid: e6a8cdc7539c3ee4bb9814a1e6c41b99, type: 3}
+  - {fileID: 4302455636253104449, guid: 3e94736205c20664988a73a5a6d5e14f, type: 3}
+  - {fileID: 4263333816012711125, guid: 379c80ee7a989014c8e7e768617b343f, type: 3}
   maxSpawnCount: 5
   spawnInterval: 2
   spawnRangeX: 4.5
@@ -792,6 +798,7 @@ MonoBehaviour:
     m_Bits: 0
   overlapCheckRadius: 1
   maxSpawnAttempts: 10
+  initialRangeEndIndex: 2
 --- !u!1 &1725537496
 GameObject:
   m_ObjectHideFlags: 0

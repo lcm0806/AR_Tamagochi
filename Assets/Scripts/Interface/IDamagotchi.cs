@@ -16,6 +16,8 @@ public interface IDamagotchi
     int Hunger { get; }
     // 현재 행복도 (읽기 전용 또는 쓰기 가능)
     int Happiness { get; }
+    // 행복도가 가득차면
+    bool IsHappyMaxed { get; }
 
     // --- 행동 (Methods) ---
     // 먹이를 주는 행동
