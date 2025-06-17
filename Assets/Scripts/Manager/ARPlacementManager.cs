@@ -14,6 +14,10 @@ public class ARPlacementManager : MonoBehaviour
     public float placementDistance = 1.0f; // 카메라로부터의 배치 거리 (미터)
     public Vector3 placementOffset = new Vector3(0, -0.5f, 0); // 배치 후 오브젝트의 y축 오프셋
 
+    [Header("Tamagotchi Customization")] // 새로 추가된 부분
+    public Vector3 defaultTamagotchiScale = new Vector3(0.2f, 0.2f, 0.2f); // 기본 배치 스케일
+    public Vector3 additionalTamagotchiRotation = new Vector3(0, 180, 0); // 배치 후 추가 회전 (오일러 각도)
+
     private Pose placementPose;
     private bool placementPoseIsValid = false; // Raycast 성공 여부 (지표가 보이는지)
 
@@ -25,17 +29,6 @@ public class ARPlacementManager : MonoBehaviour
             Debug.LogError("[ARPlacementManager] Start: ARRaycastManager가 할당되지 않았습니다. AR Session Origin에 ARRaycastManager 컴포넌트가 있는지 확인하세요.");
             this.enabled = false; // 스크립트 비활성화
             return;
-        }
-        // **** 추가: AR 카메라 참조 확인 ****
-        if (arCamera == null)
-        {
-            Debug.LogError("[ARPlacementManager] Start: AR Camera가 할당되지 않았습니다. 인스펙터에서 할당해주세요.");
-            this.enabled = false;
-            return;
-        }
-        else
-        {
-            Debug.Log("카메라가 할당 되었습니다.");
         }
         if (placementIndicator != null)
         {
@@ -118,57 +111,10 @@ public class ARPlacementManager : MonoBehaviour
         }
     }
 
-    //void PlaceTamagotchiInFrontOfCamera()
-    //{
-    //    Debug.Log("[ARPlacementManager] PlaceTamagotchiInFrontOfCamera() 호출됨.");
-    //    if (GameManager.Instance == null)
-    //    {
-    //        Debug.LogError("[ARPlacementManager] PlaceTamagotchiInFrontOfCamera: GameManager.Instance를 찾을 수 없습니다. 다마고치를 배치할 수 없습니다.");
-    //        return;
-    //    }
-
-    //    List<GameObject> capturedTamagotchis = GameManager.Instance.CapturedTamagotchiPrefabs;
-    //    Debug.Log($"[ARPlacementManager] PlaceTamagotchiInFrontOfCamera: GameManager에서 가져온 포획된 다마고치 수: {capturedTamagotchis.Count}");
-
-    //    if (capturedTamagotchis.Count > 0)
-    //    {
-    //        GameObject tamagotchiToPlace = capturedTamagotchis[0];
-
-    //        if (tamagotchiToPlace != null)
-    //        {
-    //            if (arCamera == null)
-    //            {
-    //                Debug.LogError("[ARPlacementManager] PlaceTamagotchiInFrontOfCamera: AR Camera가 할당되지 않았습니다. 배치 불가.");
-    //                return;
-    //            }
-    //            Transform cameraTransform = arCamera.transform; // Camera.current 대신 arCamera 사용
-    //            Vector3 spawnPosition = cameraTransform.position + cameraTransform.forward * placementDistance;
-    //            spawnPosition += placementOffset;
-
-    //            Quaternion spawnRotation = Quaternion.LookRotation(new Vector3(cameraTransform.forward.x, 0, cameraTransform.forward.z));
-
-    //            Debug.Log($"[ARPlacementManager] PlaceTamagotchiInFrontOfCamera: 다마고치 '{tamagotchiToPlace.name}'을(를) 인스턴스화 시도. 위치: {spawnPosition}, 회전: {spawnRotation}");
-    //            GameObject instantiatedTamagotchi = Instantiate(tamagotchiToPlace, spawnPosition, spawnRotation);
-    //            Debug.Log($"[ARPlacementManager] PlaceTamagotchiInFrontOfCamera: 다마고치 '{instantiatedTamagotchi.name}'이(가) AR 공간에 성공적으로 배치되었습니다.");
-    //            Debug.Log($"[ARPlacementManager] PlaceTamagotchiInFrontOfCamera: 배치된 오브젝트 최종 위치: {instantiatedTamagotchi.transform.position}, 스케일: {instantiatedTamagotchi.transform.localScale}");
-    //        }
-    //        else
-    //        {
-    //            Debug.LogError("[ARPlacementManager] PlaceTamagotchiInFrontOfCamera: 포획된 다마고치 리스트에 유효하지 않은 (NULL) 프리팹이 있습니다. GameManager에 추가된 프리팹이 올바른지 확인하세요.");
-    //        }
-    //    }
-    //    else
-    //    {
-    //        Debug.LogWarning("[ARPlacementManager] PlaceTamagotchiInFrontOfCamera: 포획된 다마고치가 없습니다. AR에 배치할 수 없습니다. (먼저 다마고치를 포획하세요!)");
-    //    }
-    //}
-
     void PlaceTamagotchiOnPlane()
     {
-        Debug.Log("[ARPlacementManager] PlaceTamagotchiOnPlane() 호출됨.");
         if (GameManager.Instance == null)
         {
-            Debug.LogError("[ARPlacementManager] PlaceTamagotchiOnPlane: GameManager.Instance를 찾을 수 없습니다. 다마고치를 배치할 수 없습니다.");
             return;
         }
 
@@ -177,14 +123,20 @@ public class ARPlacementManager : MonoBehaviour
 
         if (capturedTamagotchis.Count > 0)
         {
+            //여기서 어떤 오브젝트를 배치할지 설정
             GameObject tamagotchiToPlace = capturedTamagotchis[0];
 
             if (tamagotchiToPlace != null)
             {
-                Debug.Log($"[ARPlacementManager] PlaceTamagotchiOnPlane: 다마고치 '{tamagotchiToPlace.name}'을(를) 인스턴스화 시도. 위치: {placementPose.position}, 회전: {placementPose.rotation}");
                 GameObject instantiatedTamagotchi = Instantiate(tamagotchiToPlace, placementPose.position, placementPose.rotation);
-                Debug.Log($"[ARPlacementManager] PlaceTamagotchiOnPlane: 다마고치 '{instantiatedTamagotchi.name}'이(가) AR 공간에 성공적으로 배치되었습니다.");
-                Debug.Log($"[ARPlacementManager] PlaceTamagotchiOnPlane: 배치된 오브젝트 최종 위치: {instantiatedTamagotchi.transform.position}, 스케일: {instantiatedTamagotchi.transform.localScale}");
+                instantiatedTamagotchi.transform.localScale = defaultTamagotchiScale; // Inspector에서 설정한 크기로 설정
+                // 기존 placementPose.rotation에 추가적인 회전을 더함
+                instantiatedTamagotchi.transform.rotation *= Quaternion.Euler(additionalTamagotchiRotation);
+
+                DontDestroyOnLoad(instantiatedTamagotchi);
+                GameManager.Instance.AddPlacedTamagotchiInstance(instantiatedTamagotchi);
+                Debug.Log($"[ARPlacementManager] PlaceTamagotchiOnPlane: 다마고치 '{tamagotchiToPlace.name}' 배치 완료 및 DontDestroyOnLoad 설정됨.");
+
             }
             else
             {

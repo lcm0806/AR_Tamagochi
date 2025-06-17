@@ -9,13 +9,13 @@ public class Mice : MonoBehaviour, IDamagotchi
 
     [Header("Status")]
     [SerializeField] private int _health = 100;
-    [SerializeField] private int _hunger = 50;
-    [SerializeField] private int _happiness = 80;
+    [SerializeField] private int _hunger = 30;
+    [SerializeField] private int _happiness = 0;
 
     public int Health { get { return _health; } }
     public int Hunger { get { return _hunger; } }
     public int Happiness { get { return _happiness; } }
-    public bool IsHappyMaxed => _happiness >= 100;
+    public bool IsHappyMaxed => _happiness >= 300;
 
     // --- IDamagotchi 인터페이스 구현 (행동) ---
     public void Feed(int amount)
@@ -27,7 +27,7 @@ public class Mice : MonoBehaviour, IDamagotchi
 
     public void Play(int duration)
     {
-        _happiness = Mathf.Min(100, _happiness + (duration * 2)); // 행복 증가
+        _happiness = Mathf.Min(100, _happiness + (duration * 1)); // 행복 증가
         _hunger = Mathf.Min(100, _hunger + (duration / 5)); // 놀면서 배고파짐
         Debug.Log($"비둘기와 {duration}분 놀았습니다. 현재 행복: {_happiness}");
     }
@@ -43,7 +43,14 @@ public class Mice : MonoBehaviour, IDamagotchi
     {
         // 시간이 지남에 따라 상태 변화 (예: 매 초마다 호출)
         _hunger = Mathf.Min(100, _hunger + 1); // 시간이 지날수록 배고파짐
-        _happiness = Mathf.Max(0, _happiness); // 시간이 지날수록 행복 감소
+        if (_hunger >= 50)
+        {
+            _happiness = Mathf.Max(0, _happiness); // 시간이 지날수록 행복 감소
+        }
+        else
+        {
+            _happiness = Mathf.Max(0, _happiness - 2);
+        }
         _health = Mathf.Max(0, _health - (_hunger > 80 ? 2 : 1)); // 배고프면 체력 더 감소
         Debug.Log($"비둘기 상태 업데이트: 체력={_health}, 배고픔={_hunger}, 행복={_happiness}");
     }

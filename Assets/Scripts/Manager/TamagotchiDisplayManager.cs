@@ -9,6 +9,9 @@ public class TamagotchiDisplayManager : MonoBehaviour
     public TextMeshProUGUI tamagotchiStatusText;
     public Transform tamagotchiSpawnPoint; // 다마고치 모델이 생성될 위치 (빈 Gameobject)
 
+    public TextMeshProUGUI notificationText; // 다마고치 사망 메시지를 표시할 TextMeshProUGUI
+    public float sceneLoadDelay = 3.0f; // 씬 이동 전 대기 시간 (초)
+
     private IDamagotchi currentTamagotchiData; // 데이터만 저장
     private GameObject currentTamagotchiModel; // 실제 생성된 모델 인스턴스
     private GameObject originalPrefabReference;
@@ -17,6 +20,7 @@ public class TamagotchiDisplayManager : MonoBehaviour
     public float statusUpdateInterval = 1f;
 
     private bool isCaptured = false; //포획상태 추적 변수 추가
+    private bool isDeadHandled = false; // 사망 처리 중복 방지 플래그 추가
 
     void Start()
     {
@@ -69,7 +73,7 @@ public class TamagotchiDisplayManager : MonoBehaviour
 
     void Update()
     {
-        if (currentTamagotchiData == null || isCaptured) return;
+        if (currentTamagotchiData == null || isCaptured || isDeadHandled) return;
 
         statusUpdateTimer += Time.deltaTime;
         if (statusUpdateTimer >= statusUpdateInterval)
@@ -100,15 +104,33 @@ public class TamagotchiDisplayManager : MonoBehaviour
                         Debug.LogError("GameManager 인스턴스 또는 원본 프리팹 참조가 null이어서 포획 정보를 추가할 수 없습니다.");
                     }
 
-                    // 3. GpsScene으로 이동합니다.
-                    SceneManager.LoadScene("GpsScene"); // <-- 이 줄이 실행되는지 확인!
+                    if (notificationText != null)
+                    {
+                        notificationText.text = $"{currentTamagotchiData.Name} 포획 성공!";
+                        notificationText.gameObject.SetActive(true);
+                    }
+
+                    // 3초 후 GpsScene으로 이동합니다.
+                    Invoke("LoadGpsScene", sceneLoadDelay);
                 }
             }
             else if (currentTamagotchiData.IsDead()) // 사망 조건 확인 (포획보다 우선 순위 낮음)
             {
                 Debug.Log($"{currentTamagotchiData.Name}이(가) 죽었습니다.");
-                isCaptured = false; // 죽으면 더 이상 업데이트 안함
-                SceneManager.LoadScene("GPSScene");
+                isDeadHandled = true;
+                if (notificationText != null)
+                {
+                    notificationText.text = $"{currentTamagotchiData.Name}이(가) 죽었습니다...";
+                    notificationText.gameObject.SetActive(true);
+                }
+                // 3초 후 GpsScene으로 이동하는 함수 호출
+                Invoke("LoadGpsScene", sceneLoadDelay);
+
+                // 현재 다마고치 모델 비활성화 또는 파괴 (선택 사항)
+                if (currentTamagotchiModel != null)
+                {
+                    Destroy(currentTamagotchiModel);
+                }
                 // 게임 오버 처리 (예: SceneManager.LoadScene("GameOverScene");)
             }
         }
@@ -126,10 +148,17 @@ public class TamagotchiDisplayManager : MonoBehaviour
         {
             tamagotchiStatusText.text =
                 $"체력: {currentTamagotchiData.Health}\n" +
-                $"포만감: {currentTamagotchiData.Hunger}\n" +
+                $"배고픔: {currentTamagotchiData.Hunger}\n" +
                 $"행복도: {currentTamagotchiData.Happiness}";
         }
     }
+
+    private void LoadGpsScene()
+    {
+        Debug.Log($"[{name}] {sceneLoadDelay}초 지연 후 GpsScene으로 이동합니다.");
+        SceneManager.LoadScene("GpsScene");
+    }
+
 
     // --- UI 버튼에 연결할 함수들 ---
     public void OnFeedButtonClicked()
