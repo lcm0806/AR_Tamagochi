@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 
 public class ClickableObject : MonoBehaviour
 {
-    public string targetSceneName = "TamagotchiScene";
+    public string targetSceneName = "TestScene";
     private GameObject myOriginalPrefab; // <--- 이 변수를 추가하고 Inspector에서 원본 프리팹 할당!
 
     // SpawnManager가 호출하여 원본 프리팹을 설정하는 메서드
