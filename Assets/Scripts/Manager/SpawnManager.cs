@@ -40,11 +40,6 @@ public class SpawnManager : MonoBehaviour
         }
 
         _currentExpansionLevel = 0; // 확장 레벨 초기화
-        // spawnableLayer가 설정되지 않았다면 경고 메시지 출력
-        if (spawnableLayer == 0) // LayerMask의 기본값은 0 (Nothing)
-        {
-            Debug.LogWarning("Spawnable Layer가 설정되지 않았습니다! Inspector에서 'SpawnManager' 오브젝트의 'Spawnable Layer'를 설정해주세요. (예: 새로 만든 'SpawnedObject' 레이어)");
-        }
 
         StartCoroutine(SpawnCoroutine());
     }

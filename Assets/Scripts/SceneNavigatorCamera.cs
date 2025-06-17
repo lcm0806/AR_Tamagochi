@@ -34,4 +34,17 @@ public class SceneNavigatorCamera : MonoBehaviour
         Debug.Log($"[SceneNavigator] '{arSceneName}' 씬으로 이동합니다...");
         SceneManager.LoadScene(arSceneName);
     }
+
+    public void GoToCollectionScene()
+    {
+        arSceneName = "CollectionScene";
+        if (string.IsNullOrEmpty(arSceneName))
+        {
+            Debug.LogError("[SceneNavigator] AR 씬 이름이 설정되지 않았습니다. 인스펙터에서 'AR Scene Name'을 확인해주세요.");
+            return;
+        }
+
+        Debug.Log($"[SceneNavigator] '{arSceneName}' 씬으로 이동합니다...");
+        SceneManager.LoadScene(arSceneName);
+    }
 }

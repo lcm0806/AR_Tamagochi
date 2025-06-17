@@ -15,6 +15,8 @@ public class GameManager : MonoBehaviour
     // 새로 추가: 현재 AR 씬에 배치된 다마고치 인스턴스들을 저장하는 리스트
     private List<GameObject> _placedTamagotchiInstances = new List<GameObject>();
 
+    private int _currentPlacementIndex = 0;
+
     private void Awake()
     {
 
@@ -98,6 +100,53 @@ public class GameManager : MonoBehaviour
             }
         }
     }
+
+    // ARPlacementManager에서 호출하여 다음 배치할 다마고치의 프리팹을 가져옴
+    public GameObject GetNextTamagotchiToPlace()
+    {
+        if (CapturedTamagotchiPrefabs == null || CapturedTamagotchiPrefabs.Count == 0)
+        {
+            Debug.LogWarning("[GameManager] GetNextTamagotchiToPlace: 포획된 다마고치가 없습니다.");
+            return null;
+        }
+
+        if (_currentPlacementIndex < CapturedTamagotchiPrefabs.Count)
+        {
+            GameObject nextTamagotchi = CapturedTamagotchiPrefabs[_currentPlacementIndex];
+            Debug.Log($"[GameManager] 다음 배치할 다마고치: {nextTamagotchi.name} (인덱스: {_currentPlacementIndex})");
+            return nextTamagotchi;
+        }
+        else
+        {
+            Debug.Log($"[GameManager] 모든 다마고치를 배치했습니다. 현재 인덱스: {_currentPlacementIndex}, 총 개수: {CapturedTamagotchiPrefabs.Count}");
+            return null; // 모든 다마고치를 다 배치했음
+        }
+    }
+
+    // 다마고치를 배치한 후 다음 순서로 인덱스 증가
+    public void AdvancePlacementIndex()
+    {
+        _currentPlacementIndex++;
+        Debug.Log($"[GameManager] 배치 인덱스 증가. 현재 인덱스: {_currentPlacementIndex}");
+    }
+
+    // 배치 인덱스를 초기화 (예: 게임 시작 시 또는 특정 상황에서)
+    public void ResetPlacementIndex()
+    {
+        _currentPlacementIndex = 0;
+        Debug.Log("[GameManager] 배치 인덱스 초기화됨.");
+    }
+
+    public int GetCurrentPlacementIndex()
+    {
+        return _currentPlacementIndex;
+    }
+
+    public int GetTotalCapturedTamagotchisCount()
+    {
+        return CapturedTamagotchiPrefabs.Count;
+    }
+
 
     // --- 기타 함수들 (변경 없음) ---
     public void SetSelectedTamagotchi(IDamagotchi tamagotchiInstance, GameObject tamagotchiPrefab)

@@ -49,7 +49,7 @@ public class Pigeon : MonoBehaviour, IDamagotchi
         }
         else
         {
-            _happiness = Mathf.Max(0, _happiness - 2);
+            _happiness = Mathf.Max(0, _happiness - 3);
         }
         _health = Mathf.Max(0, _health - (_hunger > 80 ? 2 : 1)); // 배고프면 체력 더 감소
         Debug.Log($"비둘기 상태 업데이트: 체력={_health}, 배고픔={_hunger}, 행복={_happiness}");

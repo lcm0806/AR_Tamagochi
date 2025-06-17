@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems; // TrackableType 사용 시 필요
 
@@ -118,34 +119,37 @@ public class ARPlacementManager : MonoBehaviour
             return;
         }
 
-        List<GameObject> capturedTamagotchis = GameManager.Instance.CapturedTamagotchiPrefabs;
-        Debug.Log($"[ARPlacementManager] PlaceTamagotchiOnPlane: GameManager에서 가져온 포획된 다마고치 수: {capturedTamagotchis.Count}");
+        GameObject tamagotchiToPlace = GameManager.Instance.GetNextTamagotchiToPlace();
 
-        if (capturedTamagotchis.Count > 0)
+        if (tamagotchiToPlace != null)
         {
-            //여기서 어떤 오브젝트를 배치할지 설정
-            GameObject tamagotchiToPlace = capturedTamagotchis[0];
+            GameObject instantiatedTamagotchi = Instantiate(tamagotchiToPlace, placementPose.position, placementPose.rotation);
 
-            if (tamagotchiToPlace != null)
+            instantiatedTamagotchi.transform.localScale = defaultTamagotchiScale;
+            instantiatedTamagotchi.transform.rotation *= Quaternion.Euler(additionalTamagotchiRotation);
+
+            DontDestroyOnLoad(instantiatedTamagotchi);
+            GameManager.Instance.AddPlacedTamagotchiInstance(instantiatedTamagotchi);
+            Debug.Log($"[ARPlacementManager] PlaceTamagotchiOnPlane: 다마고치 '{tamagotchiToPlace.name}' 배치 완료 및 DontDestroyOnLoad/GameManager 등록됨.");
+
+            // 배치 후 다음 다마고치를 위해 인덱스 증가
+            GameManager.Instance.AdvancePlacementIndex();
+
+            // 모든 다마고치를 다 배치했는지 확인
+            if (GameManager.Instance.GetCurrentPlacementIndex() >= GameManager.Instance.GetTotalCapturedTamagotchisCount())
             {
-                GameObject instantiatedTamagotchi = Instantiate(tamagotchiToPlace, placementPose.position, placementPose.rotation);
-                instantiatedTamagotchi.transform.localScale = defaultTamagotchiScale; // Inspector에서 설정한 크기로 설정
-                // 기존 placementPose.rotation에 추가적인 회전을 더함
-                instantiatedTamagotchi.transform.rotation *= Quaternion.Euler(additionalTamagotchiRotation);
-
-                DontDestroyOnLoad(instantiatedTamagotchi);
-                GameManager.Instance.AddPlacedTamagotchiInstance(instantiatedTamagotchi);
-                Debug.Log($"[ARPlacementManager] PlaceTamagotchiOnPlane: 다마고치 '{tamagotchiToPlace.name}' 배치 완료 및 DontDestroyOnLoad 설정됨.");
-
-            }
-            else
-            {
-                Debug.LogError("[ARPlacementManager] PlaceTamagotchiOnPlane: 포획된 다마고치 리스트에 유효하지 않은 (NULL) 프리팹이 있습니다.");
+                Debug.Log("[ARPlacementManager] 모든 포획된 다마고치를 배치했습니다. GPS 씬으로 이동합니다.");
+                // 선택 사항: 배치 모드 종료 메시지 표시 등
+                // placementIndicator.SetActive(false); // 지표 비활성화
+                //SceneManager.LoadScene("GPSScene"); // 모든 배치 완료 후 GPS 씬으로 이동
             }
         }
         else
         {
-            Debug.LogWarning("[ARPlacementManager] PlaceTamagotchiOnPlane: 포획된 다마고치가 없습니다. AR에 배치할 수 없습니다.");
+            // GetNextTamagotchiToPlace()가 null을 반환했으므로, 더 이상 배치할 다마고치가 없다는 의미
+            Debug.LogWarning("[ARPlacementManager] 더 이상 배치할 포획된 다마고치가 없습니다. GPS 씬으로 이동합니다.");
+            // 이미 모든 다마고치를 배치했거나, 포획된 다마고치가 없는 경우
+            SceneManager.LoadScene("GPSScene");
         }
     }
 }
