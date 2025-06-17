@@ -13,7 +13,7 @@ public class GameManager : MonoBehaviour
     public List<GameObject> CapturedTamagotchiPrefabs { get; private set; } = new List<GameObject>();
 
     // 새로 추가: 현재 AR 씬에 배치된 다마고치 인스턴스들을 저장하는 리스트
-    private List<GameObject> _placedTamagotchiInstances = new List<GameObject>();
+    public List<GameObject> PlacedTamagotchiInstances = new List<GameObject>();
 
     private int _currentPlacementIndex = 0;
 
@@ -56,10 +56,10 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log($"[{name}] OnSceneLoaded: 씬 '{scene.name}' 로드됨.");
         Debug.Log($"[{name}] OnSceneLoaded: 현재 포획된 다마고치 프리팹 수: {CapturedTamagotchiPrefabs.Count}");
-        Debug.Log($"[{name}] OnSceneLoaded: 현재 배치된 다마고치 인스턴스 수: {_placedTamagotchiInstances.Count}");
+        Debug.Log($"[{name}] OnSceneLoaded: 현재 배치된 다마고치 인스턴스 수: {PlacedTamagotchiInstances.Count}");
 
         // 모든 배치된 다마고치 인스턴스의 활성화 상태를 업데이트
-        foreach (GameObject tamagotchiInstance in _placedTamagotchiInstances)
+        foreach (GameObject tamagotchiInstance in PlacedTamagotchiInstances)
         {
             if (tamagotchiInstance != null)
             {
@@ -175,10 +175,10 @@ public class GameManager : MonoBehaviour
     // 새로 추가: AR 씬에 배치된 실제 다마고치 인스턴스를 리스트에 추가
     public void AddPlacedTamagotchiInstance(GameObject instance)
     {
-        if (instance != null && !_placedTamagotchiInstances.Contains(instance))
+        if (instance != null && !PlacedTamagotchiInstances.Contains(instance))
         {
-            _placedTamagotchiInstances.Add(instance);
-            Debug.Log($"[{name}] Placed Tamagotchi Instance Added: {instance.name}. Total placed: {_placedTamagotchiInstances.Count}");
+            PlacedTamagotchiInstances.Add(instance);
+            Debug.Log($"[{name}] Placed Tamagotchi Instance Added: {instance.name}. Total placed: {PlacedTamagotchiInstances.Count}");
         }
     }
 
@@ -195,14 +195,14 @@ public class GameManager : MonoBehaviour
     // 배치된 모든 다마고치 인스턴스를 제거하고 리스트를 비우는 함수 (예: 게임 재시작 시)
     public void ClearAllPlacedTamagotchiInstances()
     {
-        foreach (GameObject instance in _placedTamagotchiInstances)
+        foreach (GameObject instance in PlacedTamagotchiInstances)
         {
             if (instance != null)
             {
                 Destroy(instance);
             }
         }
-        _placedTamagotchiInstances.Clear();
+        PlacedTamagotchiInstances.Clear();
         Debug.Log($"[{name}] All Placed Tamagotchi Instances cleared and destroyed.");
     }
 }

@@ -284,6 +284,52 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &411970777
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 411970779}
+  - component: {fileID: 411970778}
+  m_Layer: 0
+  m_Name: ARManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &411970778
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 411970777}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1240dc387095d6b43bfd33fc2f8489cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  arSession: {fileID: 1019971941}
+  arSessionOrigin: {fileID: 1087323705}
+--- !u!4 &411970779
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 411970777}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 54.02041, y: 1412.4364, z: 9.865117}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &462543944
 GameObject:
   m_ObjectHideFlags: 0
@@ -670,6 +716,8 @@ MonoBehaviour:
   arCamera: {fileID: 1987249960}
   placementDistance: 1
   placementOffset: {x: 0, y: -0.5, z: 0}
+  defaultTamagotchiScale: {x: 0.2, y: 0.2, z: 0.2}
+  additionalTamagotchiRotation: {x: 0, y: 180, z: 0}
 --- !u!1 &1087323701
 GameObject:
   m_ObjectHideFlags: 0
@@ -1342,3 +1390,4 @@ SceneRoots:
   - {fileID: 462543948}
   - {fileID: 9755387}
   - {fileID: 969157847}
+  - {fileID: 411970779}

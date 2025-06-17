@@ -129,6 +129,14 @@ public class ARPlacementManager : MonoBehaviour
             instantiatedTamagotchi.transform.rotation *= Quaternion.Euler(additionalTamagotchiRotation);
 
             DontDestroyOnLoad(instantiatedTamagotchi);
+            if (instantiatedTamagotchi.transform.parent != null)
+            {
+                Debug.LogWarning($"[ARPlacementManager] DontDestroyOnLoad 후에도 다마고치 '{instantiatedTamagotchi.name}'의 부모가 '{instantiatedTamagotchi.transform.parent.name}'으로 남아있습니다. 이는 예상치 못한 동작을 유발할 수 있습니다.");
+            }
+            else
+            {
+                Debug.Log($"[ARPlacementManager] 다마고치 '{instantiatedTamagotchi.name}'는 이제 독립적인 최상위 오브젝트입니다 (DontDestroyOnLoad 적용).");
+            }
             GameManager.Instance.AddPlacedTamagotchiInstance(instantiatedTamagotchi);
             Debug.Log($"[ARPlacementManager] PlaceTamagotchiOnPlane: 다마고치 '{tamagotchiToPlace.name}' 배치 완료 및 DontDestroyOnLoad/GameManager 등록됨.");
 
